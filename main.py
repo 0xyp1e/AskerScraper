@@ -4,6 +4,14 @@ from question import Question
 import json
 
 '''
+AskerScraper - Retrieve Asker Q&A Community content
+https://github.com/0xyp1e/AskerScraper
+
+Written by 0xyp1e, https://github.com/0xyp1e
+DISCLAIMER: I don't own any website's resources and if it's the case I can delete all of this.
+'''
+
+'''
 Gets a question's id from a li question item.
 '''
 def getq_id(liq):
@@ -28,7 +36,7 @@ def transformliq(liq):
     return Question(getq_id(liq), getq_title(liq), getq_username(liq))
 
 '''
-Get 'n' questions.
+Gets 'n' questions.
 '''
 def get_questions(n, fid = 0):
     questions = []
@@ -74,4 +82,4 @@ def main(n, fid = 0):
     # Printing all questions in JSON format:
     print(json.dumps([q.__dict__ for q in questions]))
 
-main(10, 0)
+main(50, 0)

@@ -12,6 +12,5 @@ class Question:
     def pshow(self):
         print(30 * "=")
         print(f"ID: {self.id}\nTITLE: {self.title}\nUSER: {self.username}")
-
-    def jshow(self):
-        print(json.dumps(self.__dict__) + ",")
+        
+        print(30 * "=")
