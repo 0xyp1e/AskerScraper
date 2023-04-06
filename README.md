@@ -5,7 +5,7 @@ Simple tool to retrieve 'n' questions from **asker.fun** Q&A community. In the f
  - [ ] Get answers
  - [ ] Get comments
  - [ ] Get a single question
- - [ ] Make it available as a real CLI tool and not just a script
+ - [X] Make it available as a real CLI tool and not just a script (mm/dd/yy, 04/06/23)
  - [ ] Catch exceptions
  - [ ] Add more stuff here 
 
