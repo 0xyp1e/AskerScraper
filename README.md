@@ -2,7 +2,7 @@
 Simple tool to retrieve 'n' questions from **asker.fun** Q&A community. In the future, new features gonna be implemented.
 
 ## Todo
- - [ ] Get answers
+ - [X] Get answers
  - [ ] Get comments
  - [ ] Get a single question
  - [X] Make it available as a real CLI tool and not just a script (mm/dd/yy, 04/06/23)
