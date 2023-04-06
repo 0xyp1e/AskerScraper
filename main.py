@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from question import Question
+from answer import Answer
 import json
 import os
 import sys
@@ -78,6 +79,53 @@ def get_recent_questions(n, fid = 0, verbose = False):
     return questions
 
 '''
+Gets id by an answerli
+'''
+def get_answer_id(answerli):
+    return answerli["id"].replace("r-", "")
+
+'''
+Gets username by an answerli
+'''
+def get_answer_user(answerli):
+    return answerli.find("a", class_="user-info")["href"].replace("/user/", "")
+
+'''
+Gets answer's text from an answerli
+'''
+def get_answer_text(answerli):
+    return answerli.find("p", class_="r-p").text.strip()
+
+'''
+Transforms a answerli item into a Answer obj
+'''
+def transformali(qid, answerli):
+    return Answer(get_answer_id(answerli), qid, get_answer_user(answerli), get_answer_text(answerli))
+
+'''
+Gets all answers from a single question
+'''
+def get_answers(qid, verbose = False):
+    url = f"https://asker.fun/question/{qid}"
+    html = requests.get(url)
+
+    # Validating question's existence
+    if html.status_code == 404:
+        die("Question not found.")
+
+    # "Souping it"
+    soup = BeautifulSoup(html.text, "html.parser")
+
+    # Getting all answers
+    answersli = soup.find_all("li", class_="resposta")
+    answers = []
+
+    for a in answersli:
+        answers.append(transformali(qid, a))
+
+    return answers
+
+'''
 Show help
 '''
 def showh():
@@ -91,6 +139,7 @@ def showh():
 
     print("\t-h, --help - Show this help")
     print("\t-g, --get-recent [n questions] - Get n last questions")
+    print("\t-a, --get-answers <question_id> - Get all answers from a single question")
 
     print("\nAvailable options:")
 
@@ -134,7 +183,7 @@ def getverbose():
     return "-v" in sys.argv or "--verbose" in sys.argv
 
 def validc(command):
-    return command in [ "g", "--get-recent", "h", "--help" ]
+    return command in [ "a", "--get-answers", "g", "--get-recent", "h", "--help" ]
 
 def valido(option):
     return option in [ "v", "--verbose", "f", "--format" ]
@@ -150,6 +199,8 @@ def getcmdi(cmd):
         return "h"
     elif cmd == "-g" or cmd == "--get-recent":
         return "g"
+    elif cmd == "-a" or cmd == "get-answers":
+        return "a"
 
     return ""
 
@@ -171,12 +222,45 @@ def main():
     if COMMAND == "h":
         showh()
     elif COMMAND == "g":
-        qs = get_recent_questions(10, verbose=VERBOSE)
+        n = 10
 
+        # Verifying if 'n' option is provided:
+        for i in sys.argv:
+            if i.isnumeric():
+                n = i
+                break
+
+        # Getting questions
+        qs = get_recent_questions(int(n), verbose=VERBOSE)
+
+        # Formatting it
         if FORMAT == "pretty":
             for q in qs:
                 q.pshow()
         elif FORMAT == "json":
             print(json.dumps([q.__dict__ for q in qs]))
+    
+    elif COMMAND == "a":
+        qid = -1
+
+        # Verifying if question's id is provided
+        for i in sys.argv:
+            if i.isnumeric():
+                qid = i
+                break
+
+        if qid == -1:
+            die("Invalid usage. Use --help for more details.")
+
+        # Doing what it should do
+        answers = get_answers(qid)
+
+        # Formatting it:
+        if FORMAT == "pretty":
+            for a in answers:
+                a.pshow()
+
+        elif FORMAT == "json":
+            print(json.dumps([a.__dict__ for a in answers]))
 
 main()
