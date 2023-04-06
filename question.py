@@ -12,5 +12,3 @@ class Question:
     def pshow(self):
         print(30 * "=")
         print(f"ID: {self.id}\nTITLE: {self.title}\nUSER: {self.username}")
-        
-        print(30 * "=")
