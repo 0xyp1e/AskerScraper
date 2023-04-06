@@ -102,12 +102,12 @@ def showh():
     print("\tpretty")
     print("\tjson")
 
-    die("")
+    die("", 0)
 
 '''
 Outputs a message and finish the application.
 '''
-def die(msg, status = 0):
+def die(msg, status = 1):
     print(msg)
     print()
 
@@ -150,7 +150,7 @@ def getcmdi(cmd):
         return "h"
     elif cmd == "-g" or cmd == "--get-recent":
         return "g"
-    
+
     return ""
 
 def main():
