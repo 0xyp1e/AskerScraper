@@ -120,6 +120,9 @@ def get_answers(qid, verbose = False):
     answersli = soup.find_all("li", class_="resposta")
     answers = []
 
+    if verbose:
+        print(f"Getted {len(answers)} answers.\n")
+        
     for a in answersli:
         answers.append(transformali(qid, a))
 
@@ -199,7 +202,7 @@ def getcmdi(cmd):
         return "h"
     elif cmd == "-g" or cmd == "--get-recent":
         return "g"
-    elif cmd == "-a" or cmd == "get-answers":
+    elif cmd == "-a" or cmd == "--get-answers":
         return "a"
 
     return ""
@@ -253,7 +256,7 @@ def main():
             die("Invalid usage. Use --help for more details.")
 
         # Doing what it should do
-        answers = get_answers(qid)
+        answers = get_answers(qid, VERBOSE)
 
         # Formatting it:
         if FORMAT == "pretty":
