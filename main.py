@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from question import Question
 from answer import Answer
+from profile import Profile
 import json
 import os
 import sys
@@ -129,6 +130,80 @@ def get_answers(qid, verbose = False):
     return answers
 
 '''
+Gets profile cover url
+'''
+def get_profile_cover_url(uinfo):
+    div = uinfo.find("div", id="coverph")
+    if div == None:
+        return ""
+
+    return uinfo.find("div", id="coverph")["style"].replace("background: url(\"/media/cover_photos/", "").replace("\");", "")
+
+'''
+Gets profile pic url
+'''
+def get_profile_pic_url(uinfo):
+    return uinfo.find("div", id="uppic")["style"].replace("background: url(\"/media/avatars/", "").replace("\");", "")
+
+'''
+Gets profile username
+'''
+def get_profile_username(uinfo):
+    return uinfo.find("center", id="center1").find("b").text.strip()
+
+'''
+Gets profile bio
+'''
+def get_profile_bio(uinfo):
+    return uinfo.find("div", id="bio").text.strip()
+
+'''
+Gets profile registered date
+Probably needs to be reviewed
+'''
+def get_profile_registeredAt(uinfo):
+    return uinfo.find("span", class_="font-italic").text.strip()
+
+'''
+Gets profile followers, questions, answers and score
+'''
+def get_profile_details(uinfo):
+    trs = uinfo.find_all("td", class_="uinfo-val")
+    vls = []
+
+    for tr in trs:
+        vls.append(tr.string.strip())
+
+    return vls
+
+'''
+Gets profile info
+'''
+def get_profile(username, verbose = False):
+    url = f"https://asker.fun/user/{username}"
+    html = requests.get(url)
+
+    # Validating profile's existence
+    if html.status_code == 500:
+        die("Profile not found.")
+
+    # "Souping it"
+    soup = BeautifulSoup(html.text, "html.parser")
+
+    # uinfo
+    uinfo = soup.find("div", id="uinfo")
+    
+    coverurl = get_profile_cover_url(uinfo)
+    ppicurl = get_profile_pic_url(uinfo)
+    username = get_profile_username(uinfo)
+    bio = get_profile_bio(uinfo)
+    registeredAt = get_profile_registeredAt(uinfo)
+    dts = get_profile_details(uinfo)
+
+    profile = Profile(0, username, bio, registeredAt, dts[0], dts[1], dts[2], dts[3], coverurl, ppicurl)
+    return profile
+
+'''
 Show help
 '''
 def showh():
@@ -143,6 +218,7 @@ def showh():
     print("\t-h, --help - Show this help")
     print("\t-g, --get-recent [n questions] - Get n last questions")
     print("\t-a, --get-answers <question_id> - Get all answers from a single question")
+    print("\t-u, --get-user <usr1> - Get user's public information")
 
     print("\nAvailable options:")
 
@@ -186,10 +262,10 @@ def getverbose():
     return "-v" in sys.argv or "--verbose" in sys.argv
 
 def validc(command):
-    return command in [ "a", "--get-answers", "g", "--get-recent", "h", "--help" ]
+    return command in [ "-u", "--get-user", "-a", "--get-answers", "-g", "--get-recent", "-h", "--help" ]
 
 def valido(option):
-    return option in [ "v", "--verbose", "f", "--format" ]
+    return option in [ "-v", "--verbose", "-f", "--format" ]
 
 def validf(format):
     return format in [ "pretty", "json" ]
@@ -204,6 +280,8 @@ def getcmdi(cmd):
         return "g"
     elif cmd == "-a" or cmd == "--get-answers":
         return "a"
+    elif cmd == "-u" or cmd == "--get-user":
+        return "u"
 
     return ""
 
@@ -218,7 +296,7 @@ def main():
     FORMAT = getformat()
     
     # Validating usage
-    if not validUsage(COMMAND, FORMAT):
+    if not validUsage(f"-{COMMAND}", FORMAT):
         die("Invalid usage. Use --help for more information.")
     
     # Doing what it should do
@@ -265,5 +343,19 @@ def main():
 
         elif FORMAT == "json":
             print(json.dumps([a.__dict__ for a in answers]))
+    elif COMMAND == "u":
+        if len(sys.argv) <= 2:
+            die("Required param <username> is missing. Use --help for more details.")
+        elif validc(sys.argv[2]) or valido(sys.argv[2]):
+            die("Required param <username> is missing. Use --help for more details.")
+
+        username = sys.argv[2]
+        profile = get_profile(username, VERBOSE)
+
+        # Formatting it
+        if FORMAT == "pretty":
+            profile.pshow()
+        elif FORMAT == "json":
+            print(json.dumps(profile.__dict__))
 
 main()
